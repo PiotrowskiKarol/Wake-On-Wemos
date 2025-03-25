@@ -2,6 +2,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include "WiFiCredentialsManager.h"
+#include "WifiConnectionManager.h"
 
 const int optoPowerPin = D2; //optocoupler pin for power button
 const int optoResetPin = D1; //optocoupler pin for reset button
@@ -11,6 +12,7 @@ const int serial = 115200; //Serial Baudrate
 const int port = 80;
 
 WiFiCredentialsManager credentialsManager;
+WifiConnectionManager wifiManager;
 WiFiEventHandler wifiConnectHandler;
 WiFiEventHandler wifiDisconnectHandler;
 ESP8266WebServer server(port);
@@ -118,10 +120,12 @@ void setup()
   }
   credentialsManager.configureWifi();
   credentialsManager.loadCredentials(ssid, password);
-  wifiConnectHandler = WiFi.onStationModeGotIP(onWifiConnect);
-  wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
+  wifiManager.setCredentials(ssid, password);
+  wifiManager.begin();
+  //wifiConnectHandler = WiFi.onStationModeGotIP(onWifiConnect);
+  //wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
   
-  initWiFi();
+  //initWiFi();
   server.on("/on", handleRequestOn);
   server.on("/off", handleRequestOn);
   server.on("/forceOff", handleRequestForceOff);
@@ -132,4 +136,5 @@ void setup()
 
 void loop() {
   server.handleClient();
+  wifiManager.loop();
 }
